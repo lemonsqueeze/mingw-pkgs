@@ -22,9 +22,27 @@ prepare() {
 }
 
 build() {
-  rm -rf "${srcdir}/build-${MINGW_CHOST}"
-  mkdir "${srcdir}/build-${MINGW_CHOST}"
-  cd "${srcdir}/build-${MINGW_CHOST}"
+  # Couldn't find a way to build both static and dynamic libs,
+  # so build each one separately ...
+
+  # Static build
+  rm -rf "${srcdir}/build-${MINGW_CHOST}_static"
+  mkdir "${srcdir}/build-${MINGW_CHOST}_static"
+  cd "${srcdir}/build-${MINGW_CHOST}_static"
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake.exe \
+    -G"MSYS Makefiles" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DBUILD_SHARED_LIBS=NO \
+    "../${_realname}-${pkgver}"
+
+  make
+
+  # Shared libary build
+  rm -rf "${srcdir}/build-${MINGW_CHOST}_dyn"
+  mkdir "${srcdir}/build-${MINGW_CHOST}_dyn"
+  cd "${srcdir}/build-${MINGW_CHOST}_dyn"
 
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
   ${MINGW_PREFIX}/bin/cmake.exe \
@@ -37,11 +55,13 @@ build() {
 }
 
 check() {
-  cd "${srcdir}/build-${MINGW_CHOST}"
+  cd "${srcdir}/build-${MINGW_CHOST}_dyn"
   make test
 }
 
 package() {
-  cd "${srcdir}/build-${MINGW_CHOST}"
+  cd "${srcdir}/build-${MINGW_CHOST}_static"
+  make DESTDIR="${pkgdir}" install
+  cd "${srcdir}/build-${MINGW_CHOST}_dyn"
   make DESTDIR="${pkgdir}" install
 }
