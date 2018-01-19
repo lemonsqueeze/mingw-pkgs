@@ -1,0 +1,4 @@
+glog and protobuf packages suitable for static linking.
+(default msys2 packages are missing static libraries atm...)
+
+
