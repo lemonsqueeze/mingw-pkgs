@@ -1,0 +1,18 @@
+version: 1.0.{build}
+clone_folder: c:\projects\mingw_pkgs
+environment:
+  matrix:
+   - ARCH: "i686"
+     MINGW_INSTALLS: mingw32
+   - ARCH: "x86_64"
+     MINGW_INSTALLS: mingw64
+
+build_script:
+# Remove unwanted stuff from path
+  - set PATH=%PATH:C:\MinGW\bin;=%
+  - set PATH=%PATH:C:\Perl\bin;=%
+  - C:\msys64\usr\bin\sh.exe --login /c/projects/mingw_pkgs/scripts/msys_build.sh
+
+artifacts:
+  - path: build
+    name: mingw_pkgs
