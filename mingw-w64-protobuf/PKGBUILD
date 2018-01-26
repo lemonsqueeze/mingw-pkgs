@@ -61,10 +61,10 @@ build() {
   make -j1
 }
 
-check() {
-  cd "${srcdir}/build-${MINGW_CHOST}"
-  make -j1 check
-}
+#check() {
+#  cd "${srcdir}/build-${MINGW_CHOST}"
+#  make -j1 check
+#}
 
 package() {
   cd "${srcdir}/build-${MINGW_CHOST}"
@@ -72,4 +72,13 @@ package() {
   install -Dm644 "${srcdir}/${_realname}-${pkgver}/LICENSE" "${pkgdir}/${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
   install -Dm644 "${srcdir}/build-${MINGW_CHOST}/protobuf.pc" "${pkgdir}/${MINGW_PREFIX}/lib/pkgconfig/protobuf.pc"
   install -Dm644 "${srcdir}/build-${MINGW_CHOST}/protobuf-lite.pc" "${pkgdir}/${MINGW_PREFIX}/lib/pkgconfig/protobuf-lite.pc"
+
+  # What's wrong with protobuf ? even --enable-static fails to package static libs...
+  # But the .a's are in there, so just copy them around.
+  cd CMakeFiles/
+  for f in lib*.dir; do
+    lib=`echo $f | cut -d. -f1`
+    install -Dm644 $f/objects.a "${pkgdir}/${MINGW_PREFIX}/lib/${lib}.a"
+  done
+  cd ..
 }
